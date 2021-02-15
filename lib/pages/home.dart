@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flowmodoro/services/percentindicator.dart';
-import 'package:flowmodoro/services/work.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -11,16 +9,19 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   //Styling functionality //
-
-  bool isBreak = false;
   String switchButton = 'Stop working';
 
   String startButton = 'Start Timer';
   bool isTimerStarted = false;
 
+  stopTimer() {
+    goToBreak();
+    isTimerStarted = isTimerStarted ? false : true;
+    startButton = isTimerStarted ? 'Pause' : 'Start Timer';
+  }
   //Passing data to the break page
   void goToBreak() {
-    Navigator.pushNamed(context, '/break', arguments: {
+    Navigator.pushReplacementNamed(context, '/break', arguments: {
       'timeElapseHours': stopwatch.elapsed.inHours,
       'timeElapseMinutes': stopwatch.elapsed.inMinutes,
       'timeElapsedSeconds': stopwatch.elapsed.inSeconds
@@ -35,15 +36,11 @@ class _HomeState extends State<Home> {
   var stopwatch = Stopwatch();
 
   //Stopping the timer and sending to the break page
-  stopTimer() {
-    goToBreak();
-    isTimerStarted = isTimerStarted ? false : true;
-    startButton = isTimerStarted ? 'Pause' : 'Start Timer';
-  }
 
   //Starting the stopwatch
+  Timer _timer;
   startStopwatch() {
-    Timer(Duration(seconds: 1), keepRunning);
+    setState((){_timer = Timer(Duration(seconds: 1), keepRunning);});
   }
 
   //Callback function for the stopwatch
@@ -70,11 +67,18 @@ class _HomeState extends State<Home> {
   resetTimer() {
     stopwatch.reset();
     timerDisplay = "00:00:00";
+    _timer.cancel();
   }
 
   //Pausing the stopwatch
   pauseTimer() {
     stopwatch.stop();
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   @override

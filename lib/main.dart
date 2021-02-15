@@ -10,7 +10,7 @@ void main() {
     routes: {
       '/home': (context) => Home(),
       '/loading': (context) => Loading(),
-      '/break': (context) => Break()
+      '/break': (context) => Break(),
     },
   ));
 }

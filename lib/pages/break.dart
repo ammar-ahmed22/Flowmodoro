@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flowmodoro/services/percentindicator.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class Break extends StatefulWidget {
@@ -9,10 +8,21 @@ class Break extends StatefulWidget {
 
 class _BreakState extends State<Break> {
   Map data = {};
+  int breakDivider = 5;
+
+  String switchButton = 'Stop working';
+
+  String startButton = 'Start Break';
   bool isTimerStarted = false;
 
+  stopTimer() {
+    goBackToWork();
+    isTimerStarted = isTimerStarted ? false : true;
+    startButton = isTimerStarted ? 'Pause' : 'Start Timer';
+  }
+
   void goBackToWork() {
-    Navigator.pop(context);
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
@@ -43,14 +53,14 @@ class _BreakState extends State<Break> {
             Expanded(
                 flex: 4,
                 child: CircularPercentIndicator(
-                  percent: data['percentIndicator'],
+                  percent: 0.5,
                   animation: true,
                   animateFromLastPercent: true,
                   radius: 250,
                   lineWidth: 20,
                   progressColor: Colors.cyan[600],
                   center: Text(
-                    '00:00',
+                    '00:00:00',
                     style: TextStyle(fontSize: 40, color: Colors.white),
                   ),
                 )),
@@ -85,13 +95,20 @@ class _BreakState extends State<Break> {
                                   color: Colors.white,
                                 ),
                                 label: Text(
-                                  isTimerStarted ? 'Pause' : 'Start Timer',
+                                  startButton,
                                   style: TextStyle(color: Colors.white),
                                 ),
                                 color: Colors.blue[300],
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20)),
-                                onPressed: () {},
+                                onPressed: () {
+                                  setState(() {
+                                    isTimerStarted =
+                                        isTimerStarted ? false : true;
+                                    startButton =
+                                        isTimerStarted ? 'Pause' : 'Continue';
+                                  });
+                                },
                               ),
                             ),
                             Padding(
