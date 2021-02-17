@@ -24,6 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   percent_indicator: ^2.1.9+1
+  pausable_timer: ^0.1.0+2
 
 
   # The following adds the Cupertino Icons font to your application.

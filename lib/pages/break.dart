@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -8,7 +9,6 @@ class Break extends StatefulWidget {
 
 class _BreakState extends State<Break> {
   Map data = {};
-  int breakDivider = 5;
 
   String switchButton = 'Stop working';
 
@@ -25,10 +25,96 @@ class _BreakState extends State<Break> {
     Navigator.pushReplacementNamed(context, '/home');
   }
 
+  double percent = 1;
+  int breakDivider = 5;
+  int workTimeInSecs;
+  Timer _timer;
+  String timerDisplay = '00:00:00';
+  int breakTimeSecs;
+
+  startTimer() {
+    double secPercent = (100 / breakTimeSecs) / 100;
+    print(secPercent);
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (breakTimeSecs > 0) {
+          print('Decrement');
+          breakTimeSecs--;
+          timerDisplay = ((breakTimeSecs / 3600).floor() % 60)
+                  .toString()
+                  .padLeft(2, '0') +
+              ':' +
+              ((breakTimeSecs / 60).floor() % 60).toString().padLeft(2, '0') +
+              ':' +
+              (breakTimeSecs % 60).round().toString().padLeft(2, '0');
+          if (secPercent != null) {
+            if (percent - secPercent > 0) {
+              percent -= secPercent;
+              print('percent decrement');
+            } else {
+              percent = 1;
+            }
+          }
+        }
+
+        if (breakTimeSecs == 0) {
+          print('cancel');
+          _timer.cancel();
+          percent = 1;
+        }
+      });
+    });
+  }
+
+  pauseTimer() {}
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      setState(() {
+        data =
+            data.isNotEmpty ? data : ModalRoute.of(context).settings.arguments;
+      });
+      print(data);
+      _initalizeTimer(data);
+    });
+  }
+
+  void dispose() {
+    super.dispose();
+    _timer.cancel();
+  }
+
+  _initalizeTimer(data) async {
+    setState(() {
+      workTimeInSecs = data['timeElapsedSeconds'];
+      breakTimeSecs = (workTimeInSecs / breakDivider).round();
+      timerDisplay =
+          ((breakTimeSecs / 3600).floor() % 60).toString().padLeft(2, '0') +
+              ':' +
+              ((breakTimeSecs / 60).floor() % 60).toString().padLeft(2, '0') +
+              ':' +
+              (breakTimeSecs % 60).round().toString().padLeft(2, '0');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    data = data.isNotEmpty ? data : ModalRoute.of(context).settings.arguments;
-    print(data);
+    // data = data.isNotEmpty ? data : ModalRoute.of(context).settings.arguments;
+    // print(data);
+
+    // setState(() {
+    //   workTimeInSecs = data['timeElapsedSeconds'];
+    //   breakTimeSecs = (workTimeInSecs / breakDivider).round();
+    //   timerDisplay = ((breakTimeSecs * 3600) % 60).toString().padLeft(2, '0') +
+    //       ':' +
+    //       ((breakTimeSecs * 60) % 60).toString().padLeft(2, '0') +
+    //       ':' +
+    //       (breakTimeSecs % 60).toString().padLeft(2, '0');
+    // });
+    //Timer Functionality
+
+    // print(workTimeInSecs);
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -53,14 +139,14 @@ class _BreakState extends State<Break> {
             Expanded(
                 flex: 4,
                 child: CircularPercentIndicator(
-                  percent: 0.5,
+                  percent: percent,
                   animation: true,
                   animateFromLastPercent: true,
                   radius: 250,
                   lineWidth: 20,
                   progressColor: Colors.cyan[600],
                   center: Text(
-                    '00:00:00',
+                    timerDisplay,
                     style: TextStyle(fontSize: 40, color: Colors.white),
                   ),
                 )),
@@ -107,6 +193,9 @@ class _BreakState extends State<Break> {
                                         isTimerStarted ? false : true;
                                     startButton =
                                         isTimerStarted ? 'Pause' : 'Continue';
+                                    isTimerStarted
+                                        ? startTimer()
+                                        : pauseTimer();
                                   });
                                 },
                               ),
