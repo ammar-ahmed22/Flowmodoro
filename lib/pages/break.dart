@@ -17,8 +17,8 @@ class _BreakState extends State<Break> {
 
   stopTimer() {
     goBackToWork();
-    isTimerStarted = isTimerStarted ? false : true;
-    startButton = isTimerStarted ? 'Pause' : 'Start Timer';
+    stopwatch.stop();
+    dispose();
   }
 
   void goBackToWork() {
@@ -32,41 +32,69 @@ class _BreakState extends State<Break> {
   String timerDisplay = '00:00:00';
   int breakTimeSecs;
 
-  startTimer() {
-    double secPercent = (100 / breakTimeSecs) / 100;
-    print(secPercent);
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        if (breakTimeSecs > 0) {
-          print('Decrement');
-          breakTimeSecs--;
-          timerDisplay = ((breakTimeSecs / 3600).floor() % 60)
-                  .toString()
-                  .padLeft(2, '0') +
-              ':' +
-              ((breakTimeSecs / 60).floor() % 60).toString().padLeft(2, '0') +
-              ':' +
-              (breakTimeSecs % 60).round().toString().padLeft(2, '0');
-          if (secPercent != null) {
-            if (percent - secPercent > 0) {
-              percent -= secPercent;
-              print('percent decrement');
-            } else {
-              percent = 1;
-            }
-          }
-        }
+  var stopwatch = Stopwatch();
 
-        if (breakTimeSecs == 0) {
-          print('cancel');
-          _timer.cancel();
-          percent = 1;
-        }
-      });
+  startStopwatch() {
+    setState(() {
+      _timer = Timer(Duration(seconds: 1), keepRunning);
     });
   }
 
-  pauseTimer() {}
+  keepRunning() {
+    if (stopwatch.isRunning) {
+      startStopwatch();
+    }
+
+    if ((breakTimeSecs - stopwatch.elapsed.inSeconds) >= 0) {
+      setState(() {
+        timerDisplay = ((breakTimeSecs / 3600).floor() -
+                    stopwatch.elapsed.inHours)
+                .toString()
+                .padLeft(2, '0') +
+            ":" +
+            (((breakTimeSecs / 60).floor() - stopwatch.elapsed.inMinutes) % 60)
+                .toString()
+                .padLeft(2, '0') +
+            ':' +
+            ((breakTimeSecs - stopwatch.elapsed.inSeconds) % 60)
+                .toString()
+                .padLeft(2, '0');
+        
+        double secPercent = 1 / breakTimeSecs;
+        if ((percent - secPercent) > 0) {
+          percent -= secPercent;
+          
+        } else {
+          percent = 0;
+        }
+      });
+    } else {
+      _timer.cancel();
+      stopwatch.stop();
+    }
+  }
+
+  startTimer() {
+    stopwatch.start();
+    startStopwatch();
+  }
+
+  resetTimer() {
+    stopwatch.reset();
+    timerDisplay =
+        ((breakTimeSecs / 3600).floor() % 60).toString().padLeft(2, '0') +
+            ':' +
+            ((breakTimeSecs / 60).floor() % 60).toString().padLeft(2, '0') +
+            ':' +
+            (breakTimeSecs % 60).round().toString().padLeft(2, '0');
+    percent = 1;
+    _timer.cancel();
+  }
+
+  pauseTimer() {
+    stopwatch.stop();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -215,7 +243,13 @@ class _BreakState extends State<Break> {
                                 color: Colors.blue[300],
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20)),
-                                onPressed: () {},
+                                onPressed: () {
+                                  setState(() {
+                                    resetTimer();
+                                    startButton = "Continue";
+                                    isTimerStarted = false;
+                                  });
+                                },
                               ),
                             ),
                           ],
