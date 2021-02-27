@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:percent_indicator/percent_indicator.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'dart:async';
 
 class Break extends StatefulWidget {
   @override
@@ -8,15 +8,20 @@ class Break extends StatefulWidget {
 }
 
 class _BreakState extends State<Break> {
-  // object for incoming data from home page
-  Map data = {};
+  Color backgroundColor = Color(0xff1c243c);
 
-  // initial button strings
-  String switchButton = 'Stop working';
-  String startButton = 'Start Break';
+  String hourDisplay = '0';
+  String minuteDisplay = '0';
+  String secondDisplay = '0';
 
-  //bool for updating whether timer is started or not
   bool isTimerStarted = false;
+
+  void _onTapped(int index) {
+    print(index);
+    if (index != 1) {
+      stopTimer();
+    }
+  }
 
   // Function that is called when want to go back to work
   stopTimer() {
@@ -30,6 +35,7 @@ class _BreakState extends State<Break> {
     Navigator.pushReplacementNamed(context, '/home');
   }
 
+  Map data = {};
   double percent =
       1; // Intial percentage for countdown is 100% (incremented down)
   int breakDivider =
@@ -38,6 +44,8 @@ class _BreakState extends State<Break> {
   Timer _timer; // Timer object
   String timerDisplay = '00:00:00'; //Inital string for timer display
   int breakTimeSecs; //Amount of time the break will be
+
+  int displayTimeSecs;
 
   var stopwatch = Stopwatch(); //Stopwatch object
 
@@ -61,19 +69,15 @@ class _BreakState extends State<Break> {
     //there is still time remaining
     if ((breakTimeSecs - stopwatch.elapsed.inSeconds) >= 0) {
       setState(() {
-        //Sets the timerdisplay using the same difference (converting secs to hours - elapsed hours)
-        timerDisplay = ((breakTimeSecs / 3600).floor() -
-                    stopwatch.elapsed.inHours)
-                .toString()
-                .padLeft(2, '0') +
-            ":" +
-            (((breakTimeSecs / 60).floor() - stopwatch.elapsed.inMinutes) % 60)
-                .toString()
-                .padLeft(2, '0') +
-            ':' +
-            ((breakTimeSecs - stopwatch.elapsed.inSeconds) % 60)
-                .toString()
-                .padLeft(2, '0');
+        //Sets the timer display using the same difference (converting secs to hours - elapsed hours)
+        displayTimeSecs = breakTimeSecs;
+
+        displayTimeSecs -= stopwatch.elapsed.inSeconds;
+
+
+        hourDisplay = (displayTimeSecs / 3600).floor().toString();
+        minuteDisplay = ((displayTimeSecs / 60).floor() % 60).toString();
+        secondDisplay = (displayTimeSecs % 60).toString();
 
         // Fraction of the whole that needs to be decremented from the whole
         // to update the circle indicator
@@ -107,12 +111,9 @@ class _BreakState extends State<Break> {
     stopwatch.reset();
 
     //Timer display reinitialized to the break time based on home page and break divider
-    timerDisplay =
-        ((breakTimeSecs / 3600).floor() % 60).toString().padLeft(2, '0') +
-            ':' +
-            ((breakTimeSecs / 60).floor() % 60).toString().padLeft(2, '0') +
-            ':' +
-            (breakTimeSecs % 60).round().toString().padLeft(2, '0');
+    hourDisplay = ((breakTimeSecs / 3600).floor() % 60).toString();
+    minuteDisplay = ((breakTimeSecs / 60).floor() % 60).toString();
+    secondDisplay = (breakTimeSecs % 60).round().toString();
     percent = 1;
 
     // cancelling the timer to not cause infinite loops and continously running timers
@@ -144,168 +145,222 @@ class _BreakState extends State<Break> {
   }
 
   // Disposal of the timer when going back to the home page or any other pages
-  void dispose() {
-    super.dispose();
-    _timer.cancel();
-  }
 
   _initalizeTimer(data) async {
     setState(() {
       workTimeInSecs = data['timeElapsedSeconds'];
       breakTimeSecs = (workTimeInSecs / breakDivider).round();
-      timerDisplay =
-          ((breakTimeSecs / 3600).floor() % 60).toString().padLeft(2, '0') +
-              ':' +
-              ((breakTimeSecs / 60).floor() % 60).toString().padLeft(2, '0') +
-              ':' +
-              (breakTimeSecs % 60).round().toString().padLeft(2, '0');
+      hourDisplay = ((breakTimeSecs / 3600).floor() % 60).toString();
+      minuteDisplay = ((breakTimeSecs / 60).floor() % 60).toString();
+      secondDisplay = (breakTimeSecs % 60).round().toString();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: backgroundColor,
+        items: [
+          BottomNavigationBarItem(
+            label: 'Work Mode',
+            icon: Icon(
+              Icons.work,
+            ),
+          ),
+          BottomNavigationBarItem(
+              label: 'Break Mode',
+              icon: Icon(
+                Icons.bedtime_sharp,
+              ))
+        ],
+        currentIndex: 1,
+        selectedItemColor: Colors.amber[300],
+        unselectedItemColor: Colors.grey[700],
+        selectedLabelStyle: TextStyle(
+          fontSize: 20,
+          fontFamily: 'Cairo',
+          letterSpacing: 4,
+        ),
+        unselectedLabelStyle: TextStyle(
+          color: Colors.grey[300],
+          fontSize: 20,
+          letterSpacing: 4,
+          fontFamily: 'Cairo',
+        ),
+        onTap: _onTapped,
+      ),
       body: Container(
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: [Colors.blue[500], Colors.blue[300]],
-                begin: FractionalOffset(0.5, 1))),
+        color: backgroundColor,
         width: double.infinity,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SafeArea(
+            CircularPercentIndicator(
+              percent: percent,
+              animateFromLastPercent: true,
+              animation: true,
+              radius: 350,
+              lineWidth: 5,
+              progressColor: Colors.amber[300],
+              center: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                children: [
+                  Text(
+                    hourDisplay,
+                    style: TextStyle(
+                        color: Colors.amber[300],
+                        fontSize: 75,
+                        fontFamily: 'Cairo',
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'hrs',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 25,
+                      letterSpacing: 2,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    minuteDisplay,
+                    style: TextStyle(
+                        color: Colors.amber[300],
+                        fontSize: 75,
+                        fontFamily: 'Cairo',
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'mins',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 25,
+                      letterSpacing: 2,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                  Text(
+                    secondDisplay,
+                    style: TextStyle(
+                        color: Colors.amber[300],
+                        fontSize: 75,
+                        fontFamily: 'Cairo',
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'secs',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 25,
+                      letterSpacing: 2,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 100,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                FlatButton(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                    child: Text(
+                      isTimerStarted ? 'Pause' : "Start",
+                      style: TextStyle(
+                        color: Colors.amber[300],
+                        fontFamily: 'Cairo',
+                        fontSize: 20,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      isTimerStarted = isTimerStarted ? false : true;
+                      isTimerStarted ? startTimer() : pauseTimer();
+                    });
+                  },
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                      side: BorderSide(
+                          color: Colors.amber[300],
+                          width: 2,
+                          style: BorderStyle.solid)),
+                  color: backgroundColor,
+                ),
+                FlatButton(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                    child: Text(
+                      'Reset',
+                      style: TextStyle(
+                        color: isTimerStarted
+                            ? Colors.grey[600]
+                            : Colors.amber[300],
+                        fontFamily: 'Cairo',
+                        fontSize: 20,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ),
+                  onPressed: isTimerStarted
+                      ? null
+                      : () {
+                          setState(() {
+                            resetTimer();
+                          });
+                        },
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                      side: BorderSide(
+                          color: Colors.amber[300],
+                          width: 2,
+                          style: isTimerStarted
+                              ? BorderStyle.none
+                              : BorderStyle.solid)),
+                  color: backgroundColor,
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 40,
+            ),
+            FlatButton(
+              onPressed: () {
+                setState(() {
+                  stopTimer();
+                });
+              },
               child: Padding(
-                padding: EdgeInsets.only(top: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                 child: Text(
-                  'Flowmodoro',
+                  'Take a Break',
                   style: TextStyle(
-                      fontSize: 40, letterSpacing: 2, fontFamily: 'Cairo'),
+                      color: Colors.amber[300],
+                      fontFamily: 'Cairo',
+                      letterSpacing: 2,
+                      fontSize: 20),
                 ),
               ),
-            ),
-            Expanded(
-                flex: 4,
-                child: CircularPercentIndicator(
-                  percent: percent,
-                  animation: true,
-                  animateFromLastPercent: true,
-                  radius: 250,
-                  lineWidth: 20,
-                  progressColor: Colors.cyan[600],
-                  center: Text(
-                    timerDisplay,
-                    style: TextStyle(fontSize: 40, color: Colors.white),
-                  ),
-                )),
-            Expanded(
-              flex: 3,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30))),
-                child: Padding(
-                  padding: EdgeInsets.only(top: 30, left: 20, right: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 20.0),
-                              child: RaisedButton.icon(
-                                icon: Icon(
-                                  isTimerStarted
-                                      ? Icons.pause
-                                      : Icons.play_arrow,
-                                  color: Colors.white,
-                                ),
-                                label: Text(
-                                  startButton,
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                color: Colors.blue[300],
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-                                onPressed: () {
-                                  setState(() {
-                                    isTimerStarted =
-                                        isTimerStarted ? false : true;
-                                    startButton =
-                                        isTimerStarted ? 'Pause' : 'Continue';
-                                    isTimerStarted
-                                        ? startTimer()
-                                        : pauseTimer();
-                                  });
-                                },
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 20.0),
-                              child: RaisedButton.icon(
-                                icon: Icon(
-                                  Icons.repeat,
-                                  color: Colors.white,
-                                ),
-                                label: Text(
-                                  'Reset',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                color: Colors.blue[300],
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-                                onPressed: () {
-                                  setState(() {
-                                    resetTimer();
-                                    startButton = "Continue";
-                                    isTimerStarted = false;
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        flex: 4,
-                        child: RaisedButton(
-                          onPressed: isTimerStarted
-                              ? null
-                              : () {
-                                  setState(() {
-                                    goBackToWork();
-                                  });
-                                },
-                          color: Colors.blue[300],
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30)),
-                          child: Text(
-                            'Start Working',
-                            style: TextStyle(
-                                fontSize: 40,
-                                letterSpacing: 2,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 30,
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  side: BorderSide(
+                      color: Colors.amber[300],
+                      width: 2,
+                      style: BorderStyle.solid)),
+            )
           ],
         ),
       ),
