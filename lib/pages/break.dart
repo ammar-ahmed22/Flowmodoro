@@ -27,7 +27,9 @@ class _BreakState extends State<Break> {
   stopTimer() {
     goBackToWork();
     stopwatch.stop();
-    dispose();
+    if (_timer != null) {
+      _timer.cancel();
+    }
   }
 
   // Function that takes back to the home page
@@ -38,8 +40,8 @@ class _BreakState extends State<Break> {
   Map data = {};
   double percent =
       1; // Intial percentage for countdown is 100% (incremented down)
-  int breakDivider =
-      5; //Amount which the work time is divided by to get break time (will be customizable)
+  // int breakDivider =
+  //     5; //Amount which the work time is divided by to get break time (will be customizable)
   int workTimeInSecs; //Amount of time that work was done for (from home page)
   Timer _timer; // Timer object
   String timerDisplay = '00:00:00'; //Inital string for timer display
@@ -73,7 +75,6 @@ class _BreakState extends State<Break> {
         displayTimeSecs = breakTimeSecs;
 
         displayTimeSecs -= stopwatch.elapsed.inSeconds;
-
 
         hourDisplay = (displayTimeSecs / 3600).floor().toString();
         minuteDisplay = ((displayTimeSecs / 60).floor() % 60).toString();
@@ -149,7 +150,7 @@ class _BreakState extends State<Break> {
   _initalizeTimer(data) async {
     setState(() {
       workTimeInSecs = data['timeElapsedSeconds'];
-      breakTimeSecs = (workTimeInSecs / breakDivider).round();
+      breakTimeSecs = (workTimeInSecs / data['breakDivider']).round();
       hourDisplay = ((breakTimeSecs / 3600).floor() % 60).toString();
       minuteDisplay = ((breakTimeSecs / 60).floor() % 60).toString();
       secondDisplay = (breakTimeSecs % 60).round().toString();
@@ -159,6 +160,23 @@ class _BreakState extends State<Break> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        title: Row(
+          children: [
+            FlatButton.icon(
+            icon: Icon(
+              Icons.menu,
+              color: Colors.amber[300],
+              size: 40,
+              ),
+            onPressed: (){},
+            label: Text(''),),
+          ],
+        ),
+        centerTitle: false,
+        elevation: 0,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: backgroundColor,
         items: [
@@ -346,7 +364,7 @@ class _BreakState extends State<Break> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                 child: Text(
-                  'Take a Break',
+                  'Go back to Work',
                   style: TextStyle(
                       color: Colors.amber[300],
                       fontFamily: 'Cairo',

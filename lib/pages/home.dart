@@ -27,15 +27,17 @@ class _HomeState extends State<Home> {
   stopTimer() {
     goToBreak();
     isTimerStarted = isTimerStarted ? false : true;
-    _timer.cancel();
+
+    if (_timer != null) {
+      _timer.cancel();
+    }
   }
 
   //Passing data to the break page
   void goToBreak() {
     Navigator.pushReplacementNamed(context, '/break', arguments: {
-      'timeElapseHours': stopwatch.elapsed.inHours,
-      'timeElapseMinutes': stopwatch.elapsed.inMinutes,
-      'timeElapsedSeconds': stopwatch.elapsed.inSeconds
+      'timeElapsedSeconds': stopwatch.elapsed.inSeconds,
+      'breakDivider': breakDivider
     });
   }
 
@@ -88,9 +90,35 @@ class _HomeState extends State<Home> {
     stopwatch.stop();
   }
 
+  int breakDivider;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        title: Row(
+          children: [
+            FlatButton.icon(
+              icon: Icon(
+                Icons.menu,
+                color: Colors.amber[300],
+                size: 40,
+              ),
+              onPressed: () async {
+                dynamic result =
+                    await Navigator.pushNamed(context, '/menu');
+                setState(() {
+                  breakDivider = (result == null) ? 5 : (result['breakDivider']).round();
+                  print(result);
+                });
+              },
+              label: Text(''),
+            ),
+          ],
+        ),
+        centerTitle: false,
+        elevation: 0,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: backgroundColor,
         items: [
