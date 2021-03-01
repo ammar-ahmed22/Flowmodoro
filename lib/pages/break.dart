@@ -224,6 +224,7 @@ class _BreakState extends State<Break> {
               center: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
                 children: [
                   Text(
                     hourDisplay,

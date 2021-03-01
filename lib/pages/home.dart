@@ -150,173 +150,176 @@ class _HomeState extends State<Home> {
         ),
         onTap: _onTapped,
       ),
-      body: Container(
-        color: backgroundColor,
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 200,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              children: [
-                Text(
-                  hourDisplay,
-                  style: TextStyle(
-                      color: Colors.amber[300],
-                      fontSize: 75,
-                      fontFamily: 'Cairo',
-                      fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'hrs',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 25,
-                    letterSpacing: 2,
-                    fontFamily: 'Cairo',
+      body: SingleChildScrollView(
+        child: Container(
+          color: backgroundColor,
+          width: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 200,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    hourDisplay,
+                    style: TextStyle(
+                        color: Colors.amber[300],
+                        fontSize: 75,
+                        fontFamily: 'Cairo',
+                        fontWeight: FontWeight.bold),
                   ),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Text(
-                  minuteDisplay,
-                  style: TextStyle(
-                      color: Colors.amber[300],
-                      fontSize: 75,
+                  Text(
+                    'hrs',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 25,
+                      letterSpacing: 2,
                       fontFamily: 'Cairo',
-                      fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'mins',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 25,
-                    letterSpacing: 2,
-                    fontFamily: 'Cairo',
+                    ),
                   ),
-                ),
-                Text(
-                  secondDisplay,
-                  style: TextStyle(
-                      color: Colors.amber[300],
-                      fontSize: 75,
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    minuteDisplay,
+                    style: TextStyle(
+                        color: Colors.amber[300],
+                        fontSize: 75,
+                        fontFamily: 'Cairo',
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'mins',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 25,
+                      letterSpacing: 2,
                       fontFamily: 'Cairo',
-                      fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'secs',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 25,
-                    letterSpacing: 2,
-                    fontFamily: 'Cairo',
+                    ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 100,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                FlatButton(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                    child: Text(
-                      isTimerStarted ? 'Pause' : "Start",
-                      style: TextStyle(
+                  Text(
+                    secondDisplay,
+                    style: TextStyle(
+                        color: Colors.amber[300],
+                        fontSize: 75,
+                        fontFamily: 'Cairo',
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'secs',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 25,
+                      letterSpacing: 2,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 100,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  FlatButton(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                      child: Text(
+                        isTimerStarted ? 'Pause' : "Start",
+                        style: TextStyle(
+                          color: Colors.amber[300],
+                          fontFamily: 'Cairo',
+                          fontSize: 20,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isTimerStarted = isTimerStarted ? false : true;
+                        isTimerStarted ? startTimer() : pauseTimer();
+                      });
+                    },
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                        side: BorderSide(
+                            color: Colors.amber[300],
+                            width: 2,
+                            style: BorderStyle.solid)),
+                    color: backgroundColor,
+                  ),
+                  FlatButton(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                      child: Text(
+                        'Reset',
+                        style: TextStyle(
+                          color: isTimerStarted
+                              ? Colors.grey[600]
+                              : Colors.amber[300],
+                          fontFamily: 'Cairo',
+                          fontSize: 20,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ),
+                    onPressed: isTimerStarted
+                        ? null
+                        : () {
+                            setState(() {
+                              resetTimer();
+                            });
+                          },
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                        side: BorderSide(
+                            color: Colors.amber[300],
+                            width: 2,
+                            style: isTimerStarted
+                                ? BorderStyle.none
+                                : BorderStyle.solid)),
+                    color: backgroundColor,
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 40,
+              ),
+              FlatButton(
+                onPressed: () {
+                  setState(() {
+                    stopTimer();
+                  });
+                },
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                  child: Text(
+                    'Take a Break',
+                    style: TextStyle(
                         color: Colors.amber[300],
                         fontFamily: 'Cairo',
-                        fontSize: 20,
                         letterSpacing: 2,
-                      ),
-                    ),
+                        fontSize: 20),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      isTimerStarted = isTimerStarted ? false : true;
-                      isTimerStarted ? startTimer() : pauseTimer();
-                    });
-                  },
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                      side: BorderSide(
-                          color: Colors.amber[300],
-                          width: 2,
-                          style: BorderStyle.solid)),
-                  color: backgroundColor,
                 ),
-                FlatButton(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                    child: Text(
-                      'Reset',
-                      style: TextStyle(
-                        color: isTimerStarted
-                            ? Colors.grey[600]
-                            : Colors.amber[300],
-                        fontFamily: 'Cairo',
-                        fontSize: 20,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ),
-                  onPressed: isTimerStarted
-                      ? null
-                      : () {
-                          setState(() {
-                            resetTimer();
-                          });
-                        },
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                      side: BorderSide(
-                          color: Colors.amber[300],
-                          width: 2,
-                          style: isTimerStarted
-                              ? BorderStyle.none
-                              : BorderStyle.solid)),
-                  color: backgroundColor,
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 40,
-            ),
-            FlatButton(
-              onPressed: () {
-                setState(() {
-                  stopTimer();
-                });
-              },
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                child: Text(
-                  'Take a Break',
-                  style: TextStyle(
-                      color: Colors.amber[300],
-                      fontFamily: 'Cairo',
-                      letterSpacing: 2,
-                      fontSize: 20),
-                ),
-              ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
-                  side: BorderSide(
-                      color: Colors.amber[300],
-                      width: 2,
-                      style: BorderStyle.solid)),
-            )
-          ],
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    side: BorderSide(
+                        color: Colors.amber[300],
+                        width: 2,
+                        style: BorderStyle.solid)),
+              )
+            ],
+          ),
         ),
       ),
     );
